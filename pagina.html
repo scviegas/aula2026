@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Chat WebSocket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #ece5dd;
+      margin: 0;
+      padding: 0;
+    }
+
+    .chat-container {
+      width: 400px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      height: 400px;
+      padding: 15px;
+      overflow-y: auto;
+      background: #e5ddd5;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mensagem {
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 75%;
+      word-wrap: break-word;
+    }
+
+    .recebida {
+      background: white;
+      align-self: flex-start;
+    }
+
+    .enviada {
+      background: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .chat-input button {
+      background: #075e54;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .chat-input button:hover {
+      background: #0b7a6d;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">Mini Chat WebSocket</div>
+
+    <div id="chatBox" class="chat-box"></div>
+
+    <div class="chat-input">
+      <input type="text" id="mensagemInput" placeholder="Digite sua mensagem...">
+      <button onclick="enviarMensagem()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chatBox");
+    const mensagemInput = document.getElementById("mensagemInput");
+
+    // Conecta ao servidor WebSocket
+    const socket = new WebSocket("ws://localhost:8765");
+
+    socket.onopen = function() {
+      console.log("Conectado ao servidor WebSocket.");
+    };
+
+    socket.onmessage = function(event) {
+      adicionarMensagem(event.data, "recebida");
+    };
+
+    socket.onclose = function() {
+      console.log("Conexão encerrada.");
+    };
+
+    function enviarMensagem() {
+      const mensagem = mensagemInput.value.trim();
+
+      if (mensagem !== "") {
+        socket.send(mensagem);
+        adicionarMensagem(mensagem, "enviada");
+        mensagemInput.value = "";
+      }
+    }
+
+    function adicionarMensagem(texto, tipo) {
+      const div = document.createElement("div");
+      div.classList.add("mensagem", tipo);
+      div.textContent = texto;
+      chatBox.appendChild(div);
+
+      // rola para baixo automaticamente
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Permite enviar pressionando Enter
+    mensagemInput.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        enviarMensagem();
+      }
+    });
+  </script>
+</body>
+</html>
